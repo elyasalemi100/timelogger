@@ -164,42 +164,43 @@ export function TimesheetsClient({
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="card overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50">
-            <tr className="text-left text-slate-600">
-              <th className="px-4 py-3">Employee</th>
-              <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3">In</th>
-              <th className="px-4 py-3">Out</th>
-              <th className="px-4 py-3">Breaks</th>
-              <th className="px-4 py-3">Hours</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
+          <thead className="bg-slate-50/80">
+            <tr className="text-left text-slate-500">
+              <th className="px-6 py-3 font-medium">Employee</th>
+              <th className="px-6 py-3 font-medium">Date</th>
+              <th className="px-6 py-3 font-medium">In</th>
+              <th className="px-6 py-3 font-medium">Out</th>
+              <th className="px-6 py-3 font-medium">Breaks</th>
+              <th className="px-6 py-3 font-medium">Hours</th>
+              <th className="px-6 py-3 font-medium">Status</th>
+              <th className="px-6 py-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {shifts.map((s) => {
               const mins = calcDuration(s);
               const breaks = s.events.filter((e) => e.type === 'break_start' || e.type === 'break_end').length / 2;
-              const rowClass = highlightShiftId === s.id ? 'bg-amber-50' : '';
+              const rowClass = highlightShiftId === s.id ? 'bg-amber-50' : 'hover:bg-slate-50/50';
               return (
                 <tr key={s.id} className={`border-t border-slate-100 ${rowClass}`}>
-                  <td className="px-4 py-3">{s.employeeName}</td>
-                  <td className="px-4 py-3">{format(utcToZonedTime(new Date(s.started_at), timezone), 'dd MMM yyyy')}</td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4 font-medium text-slate-800">{s.employeeName}</td>
+                  <td className="px-6 py-4 text-slate-600">{format(utcToZonedTime(new Date(s.started_at), timezone), 'dd MMM yyyy')}</td>
+                  <td className="px-6 py-4 text-slate-600">
                     <span>{format(utcToZonedTime(new Date(s.started_at), timezone), 'HH:mm')}</span>
                     {s.start_photo_path && (
                       <button
                         type="button"
                         onClick={() => setPhotoPath(s.start_photo_path)}
-                        className="ml-1 text-brand-600 hover:underline"
+                        className="ml-1.5 text-brand-600 hover:text-brand-700 text-xs"
                       >
                         📷
                       </button>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4 text-slate-600">
                     {s.ended_at ? (
                       <>
                         {format(utcToZonedTime(new Date(s.ended_at), timezone), 'HH:mm')}
@@ -207,7 +208,7 @@ export function TimesheetsClient({
                           <button
                             type="button"
                             onClick={() => setPhotoPath(s.end_photo_path)}
-                            className="ml-1 text-brand-600 hover:underline"
+                            className="ml-1.5 text-brand-600 hover:text-brand-700 text-xs"
                           >
                             📷
                           </button>
@@ -217,11 +218,11 @@ export function TimesheetsClient({
                       '—'
                     )}
                   </td>
-                  <td className="px-4 py-3">{breaks}</td>
-                  <td className="px-4 py-3">{(mins / 60).toFixed(1)}h</td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4 text-slate-600">{breaks}</td>
+                  <td className="px-6 py-4 text-slate-600">{(mins / 60).toFixed(1)}h</td>
+                  <td className="px-6 py-4">
                     <span
-                      className={`px-2 py-0.5 rounded text-xs ${
+                      className={`inline-flex px-2.5 py-1 rounded-md text-xs font-medium ${
                         s.status === 'open' ? 'bg-amber-100 text-amber-800' :
                         s.status === 'approved' ? 'bg-green-100 text-green-800' :
                         'bg-slate-100 text-slate-600'
@@ -230,10 +231,10 @@ export function TimesheetsClient({
                       {s.status}
                     </span>
                     {s.correction && (
-                      <span className="ml-1 text-amber-600" title="Correction pending">⚠</span>
+                      <span className="ml-1.5 text-amber-600" title="Correction pending">⚠</span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-6 py-4">
                     <div className="flex gap-2">
                       {s.status === 'submitted' && (
                         <button
@@ -265,8 +266,12 @@ export function TimesheetsClient({
           </tbody>
         </table>
         {shifts.length === 0 && (
-          <div className="p-12 text-center text-slate-500">No shifts in this period</div>
+          <div className="p-12 text-center">
+            <p className="text-slate-500">No shifts in this period</p>
+            <p className="text-slate-400 text-sm mt-1">Try a different date range</p>
+          </div>
         )}
+        </div>
       </div>
 
       {editingShift && (

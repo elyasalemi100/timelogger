@@ -105,37 +105,38 @@ export function EmployeesClient({
         </button>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+      <div className="card overflow-hidden">
+        <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="bg-slate-50">
-            <tr className="text-left text-slate-600">
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Email</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Wage/hr</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Actions</th>
+          <thead className="bg-slate-50/80">
+            <tr className="text-left text-slate-500">
+              <th className="px-6 py-3 font-medium">Name</th>
+              <th className="px-6 py-3 font-medium">Email</th>
+              <th className="px-6 py-3 font-medium">Role</th>
+              <th className="px-6 py-3 font-medium">Wage/hr</th>
+              <th className="px-6 py-3 font-medium">Status</th>
+              <th className="px-6 py-3 font-medium">Actions</th>
             </tr>
           </thead>
           <tbody>
             {employees.map((e) => (
-              <tr key={e.id} className="border-t border-slate-100">
-                <td className="px-4 py-3">{e.name}</td>
-                <td className="px-4 py-3">{e.email}</td>
-                <td className="px-4 py-3">
-                  <span className="px-2 py-0.5 rounded text-xs bg-slate-100">{e.role}</span>
+              <tr key={e.id} className="border-t border-slate-100 hover:bg-slate-50/50">
+                <td className="px-6 py-4 font-medium text-slate-800">{e.name}</td>
+                <td className="px-6 py-4 text-slate-600">{e.email}</td>
+                <td className="px-6 py-4">
+                  <span className="inline-flex px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-600">{e.role}</span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-6 py-4 text-slate-600">
                   {e.wage_cents_per_hour != null
                     ? `$${(e.wage_cents_per_hour / 100).toFixed(2)}`
                     : '—'}
                 </td>
-                <td className="px-4 py-3">
-                  <span className={e.is_active ? 'text-green-600' : 'text-slate-400'}>
+                <td className="px-6 py-4">
+                  <span className={e.is_active ? 'text-green-600 font-medium' : 'text-slate-400'}>
                     {e.is_active ? 'Active' : 'Inactive'}
                   </span>
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-6 py-4">
                   {e.role !== 'owner' && (
                     <button
                       onClick={() => toggleActive(e.id, !e.is_active)}
@@ -149,11 +150,12 @@ export function EmployeesClient({
             ))}
           </tbody>
         </table>
+        </div>
       </div>
 
       {inviteOpen && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="card p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <h2 className="text-lg font-bold text-slate-800 mb-4">Invite employee</h2>
             {inviteLink ? (
               <div className="space-y-4">

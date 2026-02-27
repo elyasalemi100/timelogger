@@ -62,67 +62,78 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100">
-      <div className="w-full max-w-sm p-8 bg-white rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold text-slate-800 mb-2">ShiftSnap</h1>
-        <p className="text-slate-500 mb-6">Create your business account</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Business name</label>
-            <input
-              type="text"
-              value={businessName}
-              onChange={(e) => setBusinessName(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-            />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-brand-50/30 p-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <div className="inline-flex w-12 h-12 rounded-xl bg-brand-500 items-center justify-center text-white font-bold text-xl mb-4">
+            S
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Your name</label>
-            <input
-              type="text"
-              value={ownerName}
-              onChange={(e) => setOwnerName(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-            />
-          </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50"
-          >
-            {loading ? 'Creating account...' : 'Create account'}
-          </button>
-        </form>
-        <p className="mt-4 text-sm text-slate-500">
-          Already have an account?{' '}
-          <Link href="/auth/login" className="text-brand-600 hover:underline">
-            Sign in
-          </Link>
-        </p>
+          <h1 className="text-2xl font-bold text-slate-800">Create account</h1>
+          <p className="text-slate-500 mt-1">Set up your business in minutes</p>
+        </div>
+        <div className="card p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Business name</label>
+              <input
+                type="text"
+                value={businessName}
+                onChange={(e) => setBusinessName(e.target.value)}
+                required
+                className="input-base"
+                placeholder="Acme Inc"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Your name</label>
+              <input
+                type="text"
+                value={ownerName}
+                onChange={(e) => setOwnerName(e.target.value)}
+                required
+                className="input-base"
+                placeholder="Jane Smith"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="input-base"
+                placeholder="you@company.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                className="input-base"
+                placeholder="Min 6 characters"
+              />
+            </div>
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                {error}
+              </div>
+            )}
+            <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+              {loading ? 'Creating account...' : 'Create account'}
+            </button>
+          </form>
+          <p className="mt-6 text-center text-sm text-slate-500">
+            Already have an account?{' '}
+            <Link href="/auth/login" className="text-brand-600 font-medium hover:text-brand-700">
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

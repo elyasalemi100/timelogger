@@ -28,46 +28,55 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100">
-      <div className="w-full max-w-sm p-8 bg-white rounded-xl shadow-lg">
-        <h1 className="text-2xl font-bold text-slate-800 mb-2">ShiftSnap</h1>
-        <p className="text-slate-500 mb-6">Sign in to your admin account</p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-            />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-brand-50/30 p-4">
+      <div className="w-full max-w-sm">
+        <div className="text-center mb-8">
+          <div className="inline-flex w-12 h-12 rounded-xl bg-brand-500 items-center justify-center text-white font-bold text-xl mb-4">
+            S
           </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">Password</label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-            />
-          </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-50"
-          >
-            {loading ? 'Signing in...' : 'Sign in'}
-          </button>
-        </form>
-        <p className="mt-4 text-sm text-slate-500">
-          Don&apos;t have an account?{' '}
-          <Link href="/auth/signup" className="text-brand-600 hover:underline">
-            Sign up
-          </Link>
-        </p>
+          <h1 className="text-2xl font-bold text-slate-800">ShiftSnap</h1>
+          <p className="text-slate-500 mt-1">Sign in to your admin account</p>
+        </div>
+        <div className="card p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="input-base"
+                placeholder="you@company.com"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="input-base"
+                placeholder="••••••••"
+              />
+            </div>
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 text-red-600 text-sm">
+                {error}
+              </div>
+            )}
+            <button type="submit" disabled={loading} className="btn-primary w-full py-3">
+              {loading ? 'Signing in...' : 'Sign in'}
+            </button>
+          </form>
+          <p className="mt-6 text-center text-sm text-slate-500">
+            Don&apos;t have an account?{' '}
+            <Link href="/auth/signup" className="text-brand-600 font-medium hover:text-brand-700">
+              Sign up
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );

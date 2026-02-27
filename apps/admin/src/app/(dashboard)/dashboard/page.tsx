@@ -69,18 +69,21 @@ export default async function DashboardPage() {
   const alerts = (alertsRaw ?? []).map((s) => ({ ...s, employeeName: nameMap.get(s.user_id) ?? 'Unknown' }));
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold text-slate-800">Dashboard</h1>
+        <p className="text-slate-500 mt-1">Overview of today&apos;s activity</p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <h2 className="text-sm font-medium text-slate-500 mb-2">Clocked in now</h2>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="card p-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Clocked in now</h2>
           {openShifts.length > 0 ? (
-            <ul className="space-y-2">
+            <ul className="space-y-3">
               {openShifts.map((s) => (
-                <li key={s.id} className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-green-500" />
-                  <span>{s.employeeName}</span>
+                <li key={s.id} className="flex items-center gap-3">
+                  <span className="w-2.5 h-2.5 rounded-full bg-green-500 ring-2 ring-green-100" />
+                  <span className="font-medium text-slate-800">{s.employeeName}</span>
                   <span className="text-slate-400 text-sm">
                     {formatDistanceToNow(new Date(s.started_at), { addSuffix: true })}
                   </span>
@@ -88,71 +91,81 @@ export default async function DashboardPage() {
               ))}
             </ul>
           ) : (
-            <p className="text-slate-400">No one clocked in</p>
+            <p className="text-slate-400 text-sm">No one clocked in</p>
           )}
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <h2 className="text-sm font-medium text-slate-500 mb-2">Hours today</h2>
-          <p className="text-2xl font-bold text-slate-800">
-            {(totalMinutes / 60).toFixed(1)}h
+        <div className="card p-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Hours today</h2>
+          <p className="text-3xl font-bold text-slate-800">
+            {(totalMinutes / 60).toFixed(1)}<span className="text-lg font-normal text-slate-500 ml-0.5">h</span>
           </p>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <h2 className="text-sm font-medium text-slate-500 mb-2">Alerts</h2>
+        <div className="card p-6">
+          <h2 className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Alerts</h2>
           {alerts.length > 0 ? (
             <ul className="space-y-2">
               {alerts.map((s) => (
                 <li key={s.id}>
-                  <Link href={`/timesheets?shift=${s.id}`} className="text-amber-600 hover:underline">
-                    {s.employeeName} — shift &gt; 10h, may have forgotten to clock out
+                  <Link
+                    href={`/timesheets?shift=${s.id}`}
+                    className="text-amber-700 hover:text-amber-800 text-sm font-medium"
+                  >
+                    {s.employeeName} — shift &gt; 10h
                   </Link>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-slate-400">No alerts</p>
+            <p className="text-slate-400 text-sm">All good</p>
           )}
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h2 className="text-sm font-medium text-slate-500 mb-4">Today&apos;s shifts</h2>
+      <div className="card overflow-hidden">
+        <div className="p-6 border-b border-slate-100">
+          <h2 className="text-sm font-semibold text-slate-800">Today&apos;s shifts</h2>
+        </div>
         {todayShifts.length > 0 ? (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-slate-500 border-b">
-                <th className="pb-2">Employee</th>
-                <th className="pb-2">Started</th>
-                <th className="pb-2">Ended</th>
-                <th className="pb-2">Duration</th>
-                <th className="pb-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {todayShifts.map((s) => {
-                const start = new Date(s.started_at);
-                const end = s.ended_at ? new Date(s.ended_at) : new Date();
-                const mins = (end.getTime() - start.getTime()) / 60000;
-                return (
-                  <tr key={s.id} className="border-b border-slate-100">
-                    <td className="py-3">{s.employeeName}</td>
-                    <td className="py-3">{format(utcToZonedTime(start, timezone), 'HH:mm')}</td>
-                    <td className="py-3">{s.ended_at ? format(utcToZonedTime(new Date(s.ended_at), timezone), 'HH:mm') : '—'}</td>
-                    <td className="py-3">{(mins / 60).toFixed(1)}h</td>
-                    <td className="py-3">
-                      <span className={`px-2 py-0.5 rounded text-xs ${s.status === 'open' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>
-                        {s.status}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="text-left text-slate-500 bg-slate-50/50">
+                  <th className="px-6 py-3 font-medium">Employee</th>
+                  <th className="px-6 py-3 font-medium">Started</th>
+                  <th className="px-6 py-3 font-medium">Ended</th>
+                  <th className="px-6 py-3 font-medium">Duration</th>
+                  <th className="px-6 py-3 font-medium">Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {todayShifts.map((s) => {
+                  const start = new Date(s.started_at);
+                  const end = s.ended_at ? new Date(s.ended_at) : new Date();
+                  const mins = (end.getTime() - start.getTime()) / 60000;
+                  return (
+                    <tr key={s.id} className="border-t border-slate-100 hover:bg-slate-50/50">
+                      <td className="px-6 py-4 font-medium text-slate-800">{s.employeeName}</td>
+                      <td className="px-6 py-4 text-slate-600">{format(utcToZonedTime(start, timezone), 'HH:mm')}</td>
+                      <td className="px-6 py-4 text-slate-600">{s.ended_at ? format(utcToZonedTime(new Date(s.ended_at), timezone), 'HH:mm') : '—'}</td>
+                      <td className="px-6 py-4 text-slate-600">{(mins / 60).toFixed(1)}h</td>
+                      <td className="px-6 py-4">
+                        <span className={`inline-flex px-2.5 py-1 rounded-md text-xs font-medium ${s.status === 'open' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>
+                          {s.status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         ) : (
-          <p className="text-slate-400">No shifts today</p>
+          <div className="p-12 text-center">
+            <p className="text-slate-500">No shifts today</p>
+            <p className="text-slate-400 text-sm mt-1">Shifts will appear here when employees clock in</p>
+          </div>
         )}
       </div>
     </div>

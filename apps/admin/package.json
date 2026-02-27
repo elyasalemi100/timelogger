@@ -17,6 +17,7 @@
     "react-dom": "^18.2.0",
     "date-fns": "^2.30.0",
     "date-fns-tz": "^2.0.0",
+    "lucide-react": "^0.300.0",
     "stripe": "^14.0.0"
   },
   "devDependencies": {

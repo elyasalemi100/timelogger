@@ -100,7 +100,7 @@ export function BillingClient({
       <h1 className="text-2xl font-bold text-slate-800">Billing</h1>
 
       {/* Current plan & usage */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="card p-6">
         <h2 className="font-medium text-slate-800 mb-4">Current plan</h2>
         <div className="flex flex-wrap items-center gap-4">
           <span className="text-lg font-semibold text-slate-700">

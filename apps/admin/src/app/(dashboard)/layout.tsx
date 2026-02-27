@@ -29,7 +29,7 @@ export default async function DashboardLayout({
       <Sidebar />
       <div className="flex-1 flex flex-col min-h-screen">
         <Header businessName={businessName} userName={userName} />
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-6 lg:p-8">{children}</main>
       </div>
     </div>
   );
