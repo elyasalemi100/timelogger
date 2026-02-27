@@ -21,22 +21,28 @@
 
 ## Stripe Setup
 
-1. Create products in Stripe Dashboard:
-   - Plus: $10/mo, 3 seats
-   - Pro: $20/mo, 10 seats
-   - Enterprise: $100/mo, 100 seats
-   - Overage: $2/mo per additional seat (metered or separate price)
+1. Create products and prices in Stripe Dashboard:
+   - **Plus**: $10/mo recurring, 3 seats included
+   - **Pro**: $20/mo recurring, 10 seats included
+   - **Enterprise**: $100/mo recurring, 100 seats included
+   - Overage is calculated in-app ($2/seat); can add metered price later
 
-2. Create webhook endpoint:
-   - URL: `https://YOUR_PROJECT.supabase.co/functions/v1/stripe-webhook`
-   - Events: `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`
+2. Copy Price IDs (e.g. `price_xxx`) and set env vars:
+   - `STRIPE_PRICE_ID_PLUS`
+   - `STRIPE_PRICE_ID_PRO`
+   - `STRIPE_PRICE_ID_ENTERPRISE`
 
-3. Deploy Edge Function:
+3. Create webhook endpoint (use one):
+   - **Next.js** (Vercel): `https://your-domain.com/api/billing/webhook`
+   - **Supabase Edge**: `https://YOUR_PROJECT.supabase.co/functions/v1/stripe-webhook`
+   - Events: `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`
+
+4. Deploy Edge Function (if using Supabase):
    ```bash
    supabase functions deploy stripe-webhook --env-file .env
    ```
 
-4. Set secrets:
+5. Set secrets:
    ```bash
    supabase secrets set STRIPE_SECRET_KEY=sk_...
    supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_...

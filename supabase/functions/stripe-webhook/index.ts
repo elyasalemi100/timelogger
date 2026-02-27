@@ -35,9 +35,36 @@ Deno.serve(async (req) => {
     return new Response(`Webhook error: ${(err as Error).message}`, { status: 400 });
   }
 
+  if (event.type === 'checkout.session.completed') {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const businessId = session.metadata?.business_id;
+    const plan = (session.metadata?.plan as string) ?? 'plus';
+    if (businessId) {
+      const customerId = typeof session.customer === 'string' ? session.customer : session.customer?.id;
+      const subscriptionId = typeof session.subscription === 'string' ? session.subscription : session.subscription?.id;
+      const includedSeats = plan === 'plus' ? 3 : plan === 'pro' ? 10 : plan === 'enterprise' ? 100 : 3;
+      if (customerId && subscriptionId) {
+        await supabase
+          .from('subscriptions')
+          .update({
+            stripe_customer_id: customerId,
+            stripe_subscription_id: subscriptionId,
+            plan,
+            status: 'active',
+            included_seats: includedSeats,
+            trial_ends_at: null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('business_id', businessId);
+      }
+    }
+  }
+
   if (event.type === 'customer.subscription.updated' || event.type === 'customer.subscription.created') {
     const sub = event.data.object as Stripe.Subscription;
     const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer.id;
+    const plan = (sub.metadata?.plan as string) ?? 'plus';
+    const includedSeats = plan === 'plus' ? 3 : plan === 'pro' ? 10 : plan === 'enterprise' ? 100 : 3;
 
     const { data: biz } = await supabase
       .from('subscriptions')
@@ -46,9 +73,6 @@ Deno.serve(async (req) => {
       .single();
 
     if (biz) {
-      const plan = (sub.metadata?.plan as string) ?? 'plus';
-      const includedSeats = plan === 'plus' ? 3 : plan === 'pro' ? 10 : plan === 'enterprise' ? 100 : 3;
-
       await supabase
         .from('subscriptions')
         .update({
@@ -65,6 +89,27 @@ Deno.serve(async (req) => {
           updated_at: new Date().toISOString(),
         })
         .eq('business_id', biz.business_id);
+    } else {
+      const businessId = sub.metadata?.business_id;
+      if (businessId) {
+        await supabase
+          .from('subscriptions')
+          .update({
+            stripe_customer_id: customerId,
+            stripe_subscription_id: sub.id,
+            status: sub.status,
+            plan,
+            included_seats: includedSeats,
+            current_period_end: sub.current_period_end
+              ? new Date(sub.current_period_end * 1000).toISOString()
+              : null,
+            trial_ends_at: sub.trial_end
+              ? new Date(sub.trial_end * 1000).toISOString()
+              : null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('business_id', businessId);
+      }
     }
   }
 

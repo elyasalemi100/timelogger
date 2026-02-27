@@ -1,5 +1,5 @@
+import { Suspense } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { format } from 'date-fns';
 import { BillingClient } from './BillingClient';
 import { getProfileByUserId } from '@/lib/auth';
 import { createClient as createServerClient } from '@/lib/supabase/server';
@@ -31,9 +31,11 @@ export default async function BillingPage() {
     .eq('is_active', true);
 
   return (
-    <BillingClient
-      subscription={sub}
-      activeCount={activeCount ?? 0}
-    />
+    <Suspense fallback={<div className="animate-pulse h-64 bg-slate-100 rounded-xl" />}>
+      <BillingClient
+        subscription={sub}
+        activeCount={activeCount ?? 0}
+      />
+    </Suspense>
   );
 }
