@@ -1,0 +1,182 @@
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, FlatList, StyleSheet, RefreshControl } from 'react-native';
+import { useAuth } from '../contexts/AuthContext';
+import { supabase } from '../lib/supabase';
+import { format } from 'date-fns';
+
+type Shift = {
+  id: string;
+  started_at: string;
+  ended_at: string | null;
+  status: string;
+};
+
+export function HistoryScreen() {
+  const { profile } = useAuth();
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const fetchShifts = useCallback(async () => {
+    if (!profile) return;
+
+    const from = new Date();
+    from.setDate(from.getDate() - 14);
+    const { data } = await supabase
+      .from('shifts')
+      .select('id, started_at, ended_at, status')
+      .eq('business_id', profile.business_id)
+      .eq('user_id', profile.user_id)
+      .gte('started_at', from.toISOString())
+      .order('started_at', { ascending: false });
+
+    setShifts((data as Shift[]) ?? []);
+    setLoading(false);
+    setRefreshing(false);
+  }, [profile]);
+
+  useEffect(() => {
+    fetchShifts();
+  }, [fetchShifts]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchShifts();
+  }, [fetchShifts]);
+
+  function formatDuration(s: Shift) {
+    const start = new Date(s.started_at).getTime();
+    const end = s.ended_at ? new Date(s.ended_at).getTime() : Date.now();
+    const mins = (end - start) / 60000;
+    const h = Math.floor(mins / 60);
+    const m = Math.round(mins % 60);
+    return `${h}h ${m}m`;
+  }
+
+  if (loading) return <View style={styles.center}><Text style={styles.loadingText}>Loading...</Text></View>;
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Last 14 days</Text>
+      <FlatList
+        data={shifts}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={[styles.list, shifts.length === 0 && styles.listEmpty]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#16a34a" />
+        }
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.date}>{format(new Date(item.started_at), 'EEE dd MMM')}</Text>
+            <Text style={styles.time}>
+              {format(new Date(item.started_at), 'HH:mm')}
+              {item.ended_at ? ` – ${format(new Date(item.ended_at), 'HH:mm')}` : ' – ...'}
+            </Text>
+            <View style={styles.row}>
+              <Text style={styles.duration}>{formatDuration(item)}</Text>
+              <Text style={[styles.status, item.status === 'open' && styles.statusOpen]}>
+                {item.status}
+              </Text>
+            </View>
+          </View>
+        )}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No shifts yet</Text>
+            <Text style={styles.empty}>Clock in from the Home tab to get started</Text>
+          </View>
+        }
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    backgroundColor: '#f8fafc',
+  },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#0f172a',
+    marginBottom: 16,
+  },
+  list: {
+    paddingBottom: 24,
+  },
+  listEmpty: {
+    flexGrow: 1,
+  },
+  loadingText: {
+    color: '#64748b',
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#475569',
+    marginBottom: 8,
+  },
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 18,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  date: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0f172a',
+  },
+  time: {
+    fontSize: 14,
+    color: '#64748b',
+    marginTop: 4,
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  duration: {
+    fontSize: 14,
+    color: '#475569',
+  },
+  status: {
+    fontSize: 12,
+    color: '#64748b',
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  statusOpen: {
+    color: '#f59e0b',
+    backgroundColor: '#fef3c7',
+  },
+  empty: {
+    textAlign: 'center',
+    color: '#64748b',
+    fontSize: 15,
+  },
+});

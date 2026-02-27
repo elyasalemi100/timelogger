@@ -1,0 +1,19 @@
+{
+  "name": "shiftsnap",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:admin": "npm run dev -w @shiftsnap/admin",
+    "dev:mobile": "npm run start -w @shiftsnap/mobile",
+    "build:admin": "npm run build -w @shiftsnap/admin",
+    "build:shared": "npm run build -w @shiftsnap/shared",
+    "db:migrate": "supabase db push",
+    "db:seed": "supabase db seed"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.0"
+  }
+}
