@@ -28,6 +28,17 @@ export async function POST(request: Request) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   const admin = createServiceClient(serviceUrl, serviceKey);
 
+  const { data: existingOwner } = await admin
+    .from('profiles')
+    .select('business_id')
+    .eq('user_id', user.id)
+    .eq('role', 'owner')
+    .maybeSingle();
+
+  if (existingOwner) {
+    return NextResponse.json({ businessId: existingOwner.business_id });
+  }
+
   const { data: business, error: bizErr } = await admin
     .from('businesses')
     .insert({

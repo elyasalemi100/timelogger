@@ -19,6 +19,32 @@ export async function POST(request: Request) {
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   const admin = createServiceClient(serviceUrl, serviceKey);
 
+  const emailLower = email.toLowerCase().trim();
+
+  const { data: existingProfile } = await admin
+    .from('profiles')
+    .select('id')
+    .eq('business_id', businessId)
+    .eq('email', emailLower)
+    .maybeSingle();
+
+  if (existingProfile) {
+    return NextResponse.json({ message: 'This person is already in your business' }, { status: 400 });
+  }
+
+  const { data: pendingInvite } = await admin
+    .from('invites')
+    .select('id')
+    .eq('business_id', businessId)
+    .eq('email', emailLower)
+    .is('accepted_at', null)
+    .gt('expires_at', new Date().toISOString())
+    .maybeSingle();
+
+  if (pendingInvite) {
+    return NextResponse.json({ message: 'An invite is already pending for this email' }, { status: 400 });
+  }
+
   const { data: profile } = await admin
     .from('profiles')
     .select('role')
@@ -51,7 +77,7 @@ export async function POST(request: Request) {
 
   const { error } = await admin.from('invites').insert({
     business_id: businessId,
-    email: email.toLowerCase(),
+    email: emailLower,
     role: role ?? 'employee',
     token,
     expires_at: expiresAt.toISOString(),

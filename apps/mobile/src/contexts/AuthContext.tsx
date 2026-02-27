@@ -57,8 +57,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .select('id, user_id, business_id, role, name, email, wage_cents_per_hour')
       .eq('user_id', userId)
       .eq('is_active', true)
+      .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
     setProfile(data as Profile | null);
   }
 

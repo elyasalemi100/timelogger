@@ -44,7 +44,7 @@ export function HomeScreen() {
       .eq('status', 'open')
       .order('started_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     setCurrentShift(data as Shift | null);
 
@@ -55,7 +55,7 @@ export function HomeScreen() {
         .eq('shift_id', data.id)
         .order('at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
       setBreakState(events?.type === 'break_start' ? 'on_break' : 'none');
     }
     setLoading(false);

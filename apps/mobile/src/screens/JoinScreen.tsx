@@ -44,7 +44,7 @@ export function JoinScreen({
       .eq('token', token.trim().toUpperCase())
       .is('accepted_at', null)
       .gt('expires_at', new Date().toISOString())
-      .single();
+      .maybeSingle();
 
     if (!invite) {
       setError('Invalid or expired invite code');
@@ -57,7 +57,7 @@ export function JoinScreen({
       .select('id')
       .eq('user_id', user.id)
       .eq('business_id', invite.business_id)
-      .single();
+      .maybeSingle();
 
     if (profile) {
       setError('You already joined this business');
@@ -70,7 +70,7 @@ export function JoinScreen({
       .select('name, email')
       .eq('user_id', user.id)
       .limit(1)
-      .single();
+      .maybeSingle();
 
     const { error: insertErr } = await supabase.from('profiles').insert({
       user_id: user.id,
