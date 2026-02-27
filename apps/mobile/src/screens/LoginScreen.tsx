@@ -7,7 +7,7 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  Linking,
 } from 'react-native';
 import { supabase } from '../lib/supabase';
 
@@ -65,6 +65,14 @@ export function LoginScreen({ navigation }: { navigation: { navigate: (s: string
 
         <TouchableOpacity onPress={() => navigation.navigate('Signup')} style={styles.link}>
           <Text style={styles.linkText}>Don&apos;t have an account? Sign up</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.linkSecondary}
+          onPress={() => Linking.openURL('https://admin.shiftsnap.com').catch(() => {})}
+        >
+          <Text style={styles.linkTextSecondary}>
+            Business owner? Open web app to manage your team
+          </Text>
         </TouchableOpacity>
       </View>
     </KeyboardAvoidingView>
@@ -134,5 +142,13 @@ const styles = StyleSheet.create({
   linkText: {
     color: '#16a34a',
     fontSize: 14,
+  },
+  linkSecondary: {
+    marginTop: 12,
+    alignItems: 'center',
+  },
+  linkTextSecondary: {
+    color: '#64748b',
+    fontSize: 12,
   },
 });

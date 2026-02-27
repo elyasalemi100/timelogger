@@ -83,6 +83,9 @@ export default async function TimesheetsPage({
       timezone={timezone}
       businessId={businessId}
       highlightShiftId={params.shift ?? undefined}
+      fromParam={fromParam}
+      toParam={toParam}
+      employeeParam={params.employee}
     />
   );
 }

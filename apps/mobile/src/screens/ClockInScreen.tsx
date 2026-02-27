@@ -102,7 +102,9 @@ export function ClockInScreen() {
           .eq('id', params.shiftId);
 
         if (error) throw error;
-        navigation.goBack();
+        Alert.alert('Done!', "You've clocked out. Have a great day!", [
+          { text: 'OK', onPress: () => navigation.goBack() },
+        ]);
       } else {
         let startPhotoPath: string | null = null;
         if (photoUri) {
@@ -125,7 +127,9 @@ export function ClockInScreen() {
         });
 
         if (error) throw error;
-        navigation.goBack();
+        Alert.alert('You\'re clocked in!', 'Your shift has started.', [
+          { text: 'OK', onPress: () => navigation.goBack() },
+        ]);
       }
     } catch (err) {
       Alert.alert('Error', (err as Error).message);
@@ -184,19 +188,22 @@ export function ClockInScreen() {
 
         <Text style={styles.label}>Location</Text>
         {geoLoading ? (
-          <ActivityIndicator />
+          <View style={[styles.geoBox, styles.geoBoxLoading]}>
+            <ActivityIndicator size="small" color="#16a34a" />
+            <Text style={styles.geoLoading}>Getting your location...</Text>
+          </View>
         ) : (
           <View style={styles.geoBox}>
             <Text style={geo?.status === 'ok' ? styles.geoOk : styles.geoWarn}>
               {geo?.status === 'ok'
-                ? `✓ ${geo.lat.toFixed(4)}, ${geo.lng.toFixed(4)} (acc: ${geo.accuracy?.toFixed(0) ?? '?'}m)`
-                : `⚠ ${geo?.status ?? 'unknown'}`}
+                ? `✓ Location captured`
+                : `⚠ Location unavailable — add a reason below to continue`}
             </Text>
           </View>
         )}
 
         <TouchableOpacity
-          style={[styles.submitButton, loading && styles.disabled]}
+          style={[styles.submitButton, styles.submitButtonLarge, loading && styles.disabled]}
           onPress={handleSubmit}
           disabled={loading}
         >
@@ -274,9 +281,18 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 20,
   },
+  geoBoxLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  geoLoading: {
+    color: '#64748b',
+    fontSize: 14,
+    marginLeft: 12,
+  },
   geoOk: {
     color: '#16a34a',
-    fontSize: 14,
+    fontSize: 16,
   },
   geoWarn: {
     color: '#f59e0b',
@@ -287,6 +303,10 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
+  },
+  submitButtonLarge: {
+    minHeight: 52,
+    marginTop: 8,
   },
   disabled: {
     opacity: 0.6,

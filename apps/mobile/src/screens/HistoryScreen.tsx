@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Text, FlatList, StyleSheet, RefreshControl } from 'react-native';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { format } from 'date-fns';
@@ -15,27 +15,34 @@ export function HistoryScreen() {
   const { profile } = useAuth();
   const [shifts, setShifts] = useState<Shift[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => {
+  const fetchShifts = useCallback(async () => {
     if (!profile) return;
 
-    async function fetch() {
-      const from = new Date();
-      from.setDate(from.getDate() - 14);
-      const { data } = await supabase
-        .from('shifts')
-        .select('id, started_at, ended_at, status')
-        .eq('business_id', profile.business_id)
-        .eq('user_id', profile.user_id)
-        .gte('started_at', from.toISOString())
-        .order('started_at', { ascending: false });
+    const from = new Date();
+    from.setDate(from.getDate() - 14);
+    const { data } = await supabase
+      .from('shifts')
+      .select('id, started_at, ended_at, status')
+      .eq('business_id', profile.business_id)
+      .eq('user_id', profile.user_id)
+      .gte('started_at', from.toISOString())
+      .order('started_at', { ascending: false });
 
-      setShifts((data as Shift[]) ?? []);
-      setLoading(false);
-    }
-
-    fetch();
+    setShifts((data as Shift[]) ?? []);
+    setLoading(false);
+    setRefreshing(false);
   }, [profile]);
+
+  useEffect(() => {
+    fetchShifts();
+  }, [fetchShifts]);
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    fetchShifts();
+  }, [fetchShifts]);
 
   function formatDuration(s: Shift) {
     const start = new Date(s.started_at).getTime();
@@ -46,7 +53,7 @@ export function HistoryScreen() {
     return `${h}h ${m}m`;
   }
 
-  if (loading) return <View style={styles.center}><Text>Loading...</Text></View>;
+  if (loading) return <View style={styles.center}><Text style={styles.loadingText}>Loading...</Text></View>;
 
   return (
     <View style={styles.container}>
@@ -54,7 +61,10 @@ export function HistoryScreen() {
       <FlatList
         data={shifts}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
+        contentContainerStyle={[styles.list, shifts.length === 0 && styles.listEmpty]}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#16a34a" />
+        }
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.date}>{format(new Date(item.started_at), 'EEE dd MMM')}</Text>
@@ -70,7 +80,12 @@ export function HistoryScreen() {
             </View>
           </View>
         )}
-        ListEmptyComponent={<Text style={styles.empty}>No shifts</Text>}
+        ListEmptyComponent={
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyTitle}>No shifts yet</Text>
+            <Text style={styles.empty}>Clock in from the Home tab to get started</Text>
+          </View>
+        }
       />
     </View>
   );
@@ -95,6 +110,24 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingBottom: 24,
+  },
+  listEmpty: {
+    flexGrow: 1,
+  },
+  loadingText: {
+    color: '#64748b',
+  },
+  emptyContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 48,
+  },
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#475569',
+    marginBottom: 8,
   },
   card: {
     backgroundColor: '#fff',
@@ -139,6 +172,6 @@ const styles = StyleSheet.create({
   empty: {
     textAlign: 'center',
     color: '#64748b',
-    marginTop: 24,
+    fontSize: 15,
   },
 });

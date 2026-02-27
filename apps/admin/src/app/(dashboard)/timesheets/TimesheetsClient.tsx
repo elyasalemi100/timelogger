@@ -2,12 +2,18 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { utcToZonedTime } from 'date-fns-tz';
 import { createClient } from '@/lib/supabase/client';
 import { EditShiftModal } from './EditShiftModal';
 import { CorrectionModal } from './CorrectionModal';
 import { PhotoViewer } from './PhotoViewer';
+
+const DATE_PRESETS = [
+  { label: 'Today', getValue: () => format(new Date(), 'yyyy-MM-dd') },
+  { label: 'Yesterday', getValue: () => format(subDays(new Date(), 1), 'yyyy-MM-dd') },
+  { label: 'This week', getValue: () => ({ from: format(subDays(new Date(), 7), 'yyyy-MM-dd'), to: format(new Date(), 'yyyy-MM-dd') }) },
+];
 
 type ShiftRow = {
   id: string;
@@ -31,17 +37,24 @@ export function TimesheetsClient({
   timezone,
   businessId,
   highlightShiftId,
+  fromParam,
+  toParam,
+  employeeParam,
 }: {
   shifts: ShiftRow[];
   employees: { user_id: string; name: string }[];
   timezone: string;
   businessId: string;
   highlightShiftId?: string;
+  fromParam: string;
+  toParam: string;
+  employeeParam?: string;
 }) {
   const router = useRouter();
   const [editingShift, setEditingShift] = useState<ShiftRow | null>(null);
   const [correctionShift, setCorrectionShift] = useState<ShiftRow | null>(null);
   const [photoPath, setPhotoPath] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
 
   function calcDuration(s: ShiftRow) {
     const start = new Date(s.started_at).getTime();
@@ -67,7 +80,11 @@ export function TimesheetsClient({
       .update({ status: 'approved' })
       .eq('id', shiftId);
 
-    if (!error) router.refresh();
+    if (!error) {
+      setToast('Timesheet approved');
+      setTimeout(() => setToast(null), 3000);
+      router.refresh();
+    }
   }
 
   async function handleForceEnd(shiftId: string, reason: string) {
@@ -79,22 +96,62 @@ export function TimesheetsClient({
     if (res.ok) router.refresh();
   }
 
+  function navigate(params: { from?: string; to?: string; employee?: string }) {
+    const from = params.from ?? fromParam;
+    const to = params.to ?? toParam;
+    const emp = params.employee ?? employeeParam;
+    const q = new URLSearchParams();
+    q.set('from', from);
+    q.set('to', to);
+    if (emp) q.set('employee', emp);
+    router.push(`/timesheets?${q.toString()}`);
+  }
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {toast && (
+        <div className="fixed top-4 right-4 z-50 px-4 py-2 bg-green-600 text-white rounded-lg shadow-lg">
+          {toast}
+        </div>
+      )}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <h1 className="text-2xl font-bold text-slate-800">Timesheets</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex gap-1">
+            {DATE_PRESETS.map((p) => {
+              const val = p.getValue();
+              const from = typeof val === 'string' ? val : val.from;
+              const to = typeof val === 'string' ? val : val.to;
+              return (
+                <button
+                  key={p.label}
+                  type="button"
+                  onClick={() => navigate({ from, to })}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium ${
+                    fromParam === from ? 'bg-brand-100 text-brand-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              );
+            })}
+          </div>
           <input
             type="date"
-            defaultValue={format(new Date(), 'yyyy-MM-dd')}
-            onChange={(e) => router.push(`/timesheets?from=${e.target.value}&to=${e.target.value}`)}
+            value={fromParam}
+            onChange={(e) => navigate({ from: e.target.value })}
+            className="px-3 py-2 border rounded-lg text-sm"
+          />
+          <span className="text-slate-400">to</span>
+          <input
+            type="date"
+            value={toParam}
+            onChange={(e) => navigate({ to: e.target.value })}
             className="px-3 py-2 border rounded-lg text-sm"
           />
           <select
-            onChange={(e) => {
-              const v = e.target.value;
-              router.push(v ? `/timesheets?employee=${v}` : '/timesheets');
-            }}
+            value={employeeParam ?? ''}
+            onChange={(e) => navigate({ employee: e.target.value || undefined })}
             className="px-3 py-2 border rounded-lg text-sm"
           >
             <option value="">All employees</option>

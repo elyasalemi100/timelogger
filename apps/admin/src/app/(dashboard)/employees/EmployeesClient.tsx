@@ -31,11 +31,14 @@ export function EmployeesClient({
   const [inviteRole, setInviteRole] = useState<'employee' | 'admin'>('employee');
   const [inviteLoading, setInviteLoading] = useState(false);
   const [inviteError, setInviteError] = useState('');
+  const [inviteLink, setInviteLink] = useState<string | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
 
   async function handleInvite(e: React.FormEvent) {
     e.preventDefault();
     setInviteError('');
     setInviteLoading(true);
+    setInviteLink(null);
 
     const res = await fetch('/api/invites', {
       method: 'POST',
@@ -50,9 +53,20 @@ export function EmployeesClient({
       setInviteError(data.message ?? 'Failed to send invite');
       return;
     }
-    setInviteOpen(false);
+    setInviteLink(data.inviteLink ?? null);
+    setInviteToken(data.token ?? null);
     setInviteEmail('');
     router.refresh();
+  }
+
+  async function copyToClipboard(text: string) {
+    if (navigator.clipboard) await navigator.clipboard.writeText(text);
+  }
+
+  function closeInviteModal() {
+    setInviteOpen(false);
+    setInviteLink(null);
+    setInviteToken(null);
   }
 
   async function toggleActive(profileId: string, isActive: boolean) {
@@ -141,42 +155,93 @@ export function EmployeesClient({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 w-full max-w-md">
             <h2 className="text-lg font-bold text-slate-800 mb-4">Invite employee</h2>
-            <form onSubmit={handleInvite} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
-                <input
-                  type="email"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
+            {inviteLink ? (
+              <div className="space-y-4">
+                <p className="text-green-600 text-sm font-medium">Invite sent! Share with your employee:</p>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">Invite code (easy to type in app)</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={inviteToken ?? ''}
+                      className="flex-1 px-3 py-2 border rounded-lg text-sm bg-slate-50 font-mono"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(inviteToken ?? '')}
+                      className="px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200"
+                    >
+                      Copy code
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs text-slate-500 mb-1">Or share full link</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      readOnly
+                      value={inviteLink}
+                      className="flex-1 px-3 py-2 border rounded-lg text-sm bg-slate-50 truncate"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => copyToClipboard(inviteLink)}
+                      className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700"
+                    >
+                      Copy link
+                    </button>
+                  </div>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={closeInviteModal}
+                    className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700"
+                  >
+                    Done
+                  </button>
+                </div>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
-                <select
-                  value={inviteRole}
-                  onChange={(e) => setInviteRole(e.target.value as 'employee' | 'admin')}
-                  className="w-full px-3 py-2 border rounded-lg"
-                >
-                  <option value="employee">Employee</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-              {inviteError && <p className="text-red-600 text-sm">{inviteError}</p>}
-              <div className="flex justify-end gap-2">
-                <button type="button" onClick={() => setInviteOpen(false)} className="px-4 py-2 text-slate-600">
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={inviteLoading}
-                  className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50"
-                >
-                  {inviteLoading ? 'Sending...' : 'Send invite'}
-                </button>
-              </div>
-            </form>
+            ) : (
+              <form onSubmit={handleInvite} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    required
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Role</label>
+                  <select
+                    value={inviteRole}
+                    onChange={(e) => setInviteRole(e.target.value as 'employee' | 'admin')}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  >
+                    <option value="employee">Employee</option>
+                    <option value="admin">Admin</option>
+                  </select>
+                </div>
+                {inviteError && <p className="text-red-600 text-sm">{inviteError}</p>}
+                <div className="flex justify-end gap-2">
+                  <button type="button" onClick={() => setInviteOpen(false)} className="px-4 py-2 text-slate-600">
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={inviteLoading}
+                    className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-50"
+                  >
+                    {inviteLoading ? 'Sending...' : 'Send invite'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
